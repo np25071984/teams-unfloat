@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="J3yVC3qPf66HsG4RRhLTHDUaHbcbSa6hrMnWEijTgeM">
+<title>teams-unfloat — no more floating Teams meeting window on macOS</title>
+<meta name="description" content="Minimizes Microsoft Teams' floating meeting window on macOS, so it stops covering your work every time you leave the meeting.">
+<meta property="og:title" content="teams-unfloat">
+<meta property="og:description" content="Minimizes Microsoft Teams' floating meeting window on macOS, so it stops covering your work every time you leave the meeting.">
+<style>
+  :root {
+    --bg: #fbfbfd;
+    --surface: #ffffff;
+    --text: #1d1d1f;
+    --muted: #5f6368;
+    --line: #e3e3e8;
+    --accent: #4b57d6;
+    --accent-text: #ffffff;
+    --code-bg: #f2f2f6;
+    --kbd-bg: #ffffff;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 30px rgba(0, 0, 0, .08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111114;
+      --surface: #1b1b20;
+      --text: #ececf1;
+      --muted: #a1a1aa;
+      --line: #2c2c33;
+      --accent: #8b93ff;
+      --accent-text: #111114;
+      --code-bg: #212128;
+      --kbd-bg: #26262e;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 30px rgba(0, 0, 0, .35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  main, footer { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  h1, h2, h3 { line-height: 1.2; letter-spacing: -0.01em; }
+  h2 { font-size: 1.6rem; margin: 0 0 .6rem; }
+  h3 { font-size: 1.1rem; margin: 0 0 .4rem; }
+  p { margin: 0 0 1rem; }
+  code, kbd, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 5px; }
+  kbd {
+    display: inline-block; min-width: 1.6em; padding: 0 .4em; text-align: center;
+    background: var(--kbd-bg); border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 6px; font-size: .85em; line-height: 1.6;
+  }
+
+  .hero { padding: 72px 0 32px; text-align: center; }
+  .hero h1 { font-size: clamp(2.4rem, 7vw, 3.6rem); margin: 0 0 .8rem; }
+  .hero p { text-wrap: balance; }
+  .hero .lead { font-size: clamp(1.15rem, 3vw, 1.35rem); max-width: 640px; margin: 0 auto 1rem; }
+  .hero .sub { color: var(--muted); max-width: 600px; margin: 0 auto 2rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .button {
+    display: inline-block; padding: .65em 1.3em; border-radius: 10px; font-weight: 600;
+    border: 1px solid var(--line); color: var(--text); background: var(--surface);
+  }
+  .button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .button:hover { text-decoration: none; filter: brightness(1.05); }
+
+  section { padding: 48px 0 8px; }
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px;
+  }
+  .card p { margin: 0; color: var(--muted); }
+
+  .facts { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .facts li { padding-left: 1.4em; position: relative; text-wrap: pretty; }
+  .facts li::before { content: "–"; position: absolute; left: 0; color: var(--muted); }
+
+  .cmd {
+    display: flex; align-items: center; gap: 10px; margin: 0 0 1rem;
+    background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 10px 10px 14px;
+  }
+  .cmd pre { margin: 0; flex: 1; min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .copy {
+    flex: none; font: inherit; font-size: .85rem; padding: .35em .8em; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  }
+  .note { color: var(--muted); font-size: .95rem; }
+
+  footer {
+    margin-top: 56px; padding-top: 24px; padding-bottom: 48px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: .95rem; display: flex; flex-wrap: wrap; gap: 8px 20px;
+  }
+  @media (max-width: 520px) {
+    body { font-size: 16px; }
+    .hero { padding-top: 48px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <h1>teams-unfloat</h1>
+    <p class="lead">Minimizes Microsoft Teams' floating meeting window on macOS.</p>
+    <p class="sub">Leave the meeting for another Space or app, and the floating copy of the call goes to the Dock instead of covering your work.</p>
+    <div class="actions">
+      <a class="button primary" href="#install">Install</a>
+      <a class="button" href="https://github.com/np25071984/teams-unfloat">Source on GitHub</a>
+    </div>
+  </header>
+
+  <section aria-labelledby="problem">
+    <h2 id="problem">What Teams gets wrong</h2>
+    <p><strong>The meeting follows you everywhere.</strong> In a Teams call, switch to another Space or put another app in front, and Teams opens a small floating copy of the meeting over everything, on every Space. It sits on top of the window you went there to use, and Teams has no setting to turn it off.</p>
+  </section>
+
+  <section aria-labelledby="what">
+    <h2 id="what">What teams-unfloat does</h2>
+    <div class="features">
+      <div class="card">
+        <h3>Minimizes the floating window</h3>
+        <p>The moment it appears, it goes to the Dock, without the minimize animation. Your call goes on, and the meeting window stays where you left it.</p>
+      </div>
+      <div class="card">
+        <h3>Gives it back when you ask</h3>
+        <p>Click it in the Dock and it stays, until you go back to the meeting window or minimize it yourself.</p>
+      </div>
+      <div class="card">
+        <h3>Touches nothing else</h3>
+        <p>Only that one window. Teams is never quit, and the meeting window is left alone.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="small">
+    <h2 id="small">Small on purpose</h2>
+    <ul class="facts">
+      <li>One open-source binary, run as a background service. No app, Dock icon or menu bar.</li>
+      <li>One permission, Accessibility. No Screen Recording, no network.</li>
+      <li>About 8 MB of memory, and no timers: it wakes only when something happens.</li>
+      <li>Controlled with <a href="https://github.com/np25071984/teams-unfloat#commands">a few commands</a>.</li>
+    </ul>
+  </section>
+
+  <section id="install" aria-labelledby="install-h">
+    <h2 id="install-h">Install</h2>
+    <p>macOS 13 or later, on Apple Silicon or Intel. In Terminal:</p>
+    <div class="cmd">
+      <pre id="curl">curl -fsSL https://raw.githubusercontent.com/np25071984/teams-unfloat/main/install.sh | sh</pre>
+      <button class="copy" data-copy="curl" type="button">Copy</button>
+    </div>
+    <p>Or with Homebrew:</p>
+    <div class="cmd">
+      <pre id="brew">brew tap np25071984/teams-unfloat https://github.com/np25071984/teams-unfloat
+brew trust np25071984/teams-unfloat
+brew install teams-unfloat
+brew services start teams-unfloat</pre>
+      <button class="copy" data-copy="brew" type="button">Copy</button>
+    </div>
+    <p class="note">On first start, teams-unfloat asks for Accessibility permission and opens the right pane of System Settings: turn on <strong>teams-unfloat</strong> there. Everything else, from upgrading to uninstalling, is in the <a href="https://github.com/np25071984/teams-unfloat#install">README</a>.</p>
+  </section>
+</main>
+
+<footer>
+  <a href="https://github.com/np25071984/teams-unfloat">GitHub</a>
+  <a href="https://github.com/np25071984/teams-unfloat#readme">README</a>
+  <a href="https://github.com/np25071984/teams-unfloat/blob/main/CHANGELOG.md">Changelog</a>
+  <a href="https://github.com/np25071984/teams-unfloat/releases/latest">Latest release</a>
+  <span>MIT license</span>
+  <span>Microsoft Teams is a trademark of Microsoft. Not affiliated with Microsoft.</span>
+</footer>
+
+<script>
+  document.querySelectorAll(".copy").forEach(function (button) {
+    button.addEventListener("click", function () {
+      var text = document.getElementById(button.dataset.copy).textContent;
+      var done = function () {
+        button.textContent = "Copied";
+        setTimeout(function () { button.textContent = "Copy"; }, 1500);
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(done, function () {});
+      }
+    });
+  });
+</script>
+</body>
+</html>
