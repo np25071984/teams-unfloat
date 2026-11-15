@@ -3,8 +3,7 @@ class TeamsUnfloat < Formula
   homepage "https://github.com/np25071984/teams-unfloat"
   url "https://github.com/np25071984/teams-unfloat/releases/download/v0.0.1/teams-unfloat-macos.tar.gz"
   version "0.0.1"
-  # Set from the release's teams-unfloat-macos.tar.gz.sha256 once v0.0.1 is published.
-  sha256 "RELEASE_SHA256"
+  sha256 "76272f069873f3251b2dcc030dbdd9dc44340af5aaa3a0a993f195c36cf754e3"
   license "MIT"
 
   depends_on :macos
